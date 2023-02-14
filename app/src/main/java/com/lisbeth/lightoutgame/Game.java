@@ -16,6 +16,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import java.util.Random;
+
 public class Game extends AppCompatActivity {
     int screenWidth;
     int screenHeight;
@@ -34,6 +36,8 @@ public class Game extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         this.setDrawableOff(getResources().getDrawable(R.drawable.light_off));
         this.setDrawableOn(getResources().getDrawable(R.drawable.light_on));
+
+        // tomamos los valores de la pantalla inicial para crear la matriz de botones
         if (getIntent().hasExtra("width") || getIntent().hasExtra("height")) {
             this.width = getIntent().getIntExtra("width", 5);
             this.height = getIntent().getIntExtra("height", 5);
@@ -41,6 +45,8 @@ public class Game extends AppCompatActivity {
             throw new IllegalArgumentException("Activity cannot find  extras " + "width");
         }
         this.gameLayout();
+        this.inicializarTablero();
+        // agregamos los listeners
         for (int i = 0; i < buttons.length; i++) {
             for (int j = 0; j < buttons[i].length; j++) {
                 this.changeButtonBackground(buttons[i][j]);
@@ -81,7 +87,6 @@ public class Game extends AppCompatActivity {
                 params.setMargins(10, 10, 10, 10);
                 button.setLayoutParams(params);
 
-               // button.setPadding(0, 0, 0, 0);
                 buttons[row][col] = button;
                 rowLayout.addView(button);
             }
@@ -90,17 +95,41 @@ public class Game extends AppCompatActivity {
     }
 
     public void changeButtonBackground(final Button button) {
-        button.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
 
-                    button.setBackground(drawableOn);
-                }
-                return false;
+    int fila = this.obtenerFilaBoton(button);
+    int columna = this.obtenerColumnaBoton(button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                actualizarBotonesAdyacentes(fila, columna);
             }
         });
+
     }
+
+
+    private int obtenerFilaBoton(Button boton) {
+        for (int fila = 0; fila < buttons.length; fila++) {
+            for (int columna = 0; columna < buttons[fila].length; columna++) {
+                if (buttons[fila][columna] == boton) {
+                    return fila;
+                }
+            }
+        }
+        return -1;
+    }
+
+    private int obtenerColumnaBoton(Button boton) {
+        for (int fila = 0; fila < buttons.length; fila++) {
+            for (int columna = 0; columna < buttons[fila].length; columna++) {
+                if (buttons[fila][columna] == boton) {
+                    return columna;
+                }
+            }
+        }
+        return -1;
+    }
+
 
 
     public Button[][] getButtons() {
@@ -122,4 +151,61 @@ public class Game extends AppCompatActivity {
     public void setDrawableOff(Drawable drawableOff) {
         this.drawableOff = drawableOff;
     }
+
+
+    private void cambiarColorBoton(Button boton) {
+        if(boton.getBackground() == drawableOff){
+            boton.setBackground(drawableOn);
+        }else{
+            boton.setBackground(drawableOff);
+        }
+    }
+
+
+    private void actualizarBotonesAdyacentes(int fila, int columna) {
+        cambiarColorBoton(buttons[fila][columna]);
+        // Cambiar el color del botón de arriba
+        if (fila > 0) {
+            cambiarColorBoton(buttons[fila - 1][columna]);
+        }
+        // Cambiar el color del botón de abajo
+        if (fila < buttons.length - 1) {
+            cambiarColorBoton(buttons[fila + 1][columna]);
+        }
+        // Cambiar el color del botón de la izquierda
+        if (columna > 0) {
+            cambiarColorBoton(buttons[fila][columna - 1]);
+        }
+        // Cambiar el color del botón de la derecha
+        if (columna < buttons[fila].length - 1) {
+            cambiarColorBoton(buttons[fila][columna + 1]);
+        }
+    }
+
+
+    public void inicializarTablero(){
+        Random ran = new Random();
+
+        for (int i = 0; i < buttons.length; i++) {
+            for (int j = 0; j < buttons[i].length; j++) {
+                int probabilidad = ran.nextInt(2);
+                if (probabilidad==1){
+                    buttons[i][j].setBackground(drawableOn);
+                }
+            }
+        }
+    }
+
+    public  boolean finalizado(){
+        for (int i = 0; i < buttons.length; i++) {
+            for (int j = 0; j < buttons[i].length; j++) {
+                if(buttons[i][j].getBackground()== drawableOn){
+                    return  false;
+                }
+            }
+        }
+        return  true;
+    }
+
+
 }

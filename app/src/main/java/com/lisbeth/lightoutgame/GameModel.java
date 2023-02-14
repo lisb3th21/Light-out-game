@@ -38,31 +38,12 @@ public class GameModel {
         }
     }
 
-    public void print() {
-        // ! por eliminar - para pruebas
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[i].length; j++) {
-                System.out.print(board[i][j] + " ");
-            }
-            System.out.println();
-        }
-        System.out.println("-----------------");
-    }
-    public boolean[][] getBoard() {
-        return board;
-    }
+    //public boolean[][] getBoard() {
+       // return board;
+   // }
 
     public void setBoard(boolean[][] board) {
         this.board = board;
-    }
-    public static void main(String[] args) {
-        GameModel model = new GameModel(3, 4);
-        model.print();
-        model.randomBoard();
-        model.print();
-        model.changeLight(model.getBoard().length-1, model.getBoard()[0].length - 1);
-        model.print();
-      
     }
 
     
