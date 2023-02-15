@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
@@ -11,11 +12,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.LightOutGame"
+
         tools:targetApi="31">
         <activity
             android:name=".Game"
             android:theme="@style/Theme.AppCompat.NoActionBar"
-
+            android:screenOrientation="sensorPortrait"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
@@ -23,7 +25,7 @@
         </activity>
         <activity
             android:name=".MainActivity"
-
+            android:screenOrientation="sensorPortrait"
             android:theme="@style/Theme.AppCompat.NoActionBar"
 
             android:exported="true">
