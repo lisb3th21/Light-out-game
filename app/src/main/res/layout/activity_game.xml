@@ -69,42 +69,6 @@
 
 
     <LinearLayout
-        android:id="@+id/intents"
-        android:layout_width="120dp"
-        android:layout_height="65dp"
-        android:layout_gravity="center"
-        android:layout_margin="10dp"
-        android:background="@drawable/rounded_login_ui"
-        android:backgroundTint="@color/fifth"
-        android:gravity="center"
-        android:orientation="vertical"
-        app:layout_constraintEnd_toStartOf="@+id/linearLayout3"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
-
-        <TextView
-            android:id="@+id/current_score"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="Score"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/record"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="0"
-            android:textColor="@color/white"
-            android:textSize="25sp"
-            android:textStyle="bold" />
-
-    </LinearLayout>
-
-    <LinearLayout
         android:id="@+id/rootGame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -113,7 +77,7 @@
         app:layout_constraintBottom_toTopOf="@+id/botonSolucion"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/intents">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
 
     </LinearLayout>
 
@@ -124,7 +88,7 @@
         android:layout_marginBottom="20dp"
         android:backgroundTint="@color/fifth"
         android:paddingBottom="5dp"
-        android:text="Solucionar"
+        android:text="Solve"
         android:textColor="@color/white"
         android:textSize="20dp"
         android:textStyle="bold"
@@ -132,6 +96,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="98dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="651dp" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

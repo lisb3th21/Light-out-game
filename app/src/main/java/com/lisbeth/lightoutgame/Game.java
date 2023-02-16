@@ -1,10 +1,13 @@
 package com.lisbeth.lightoutgame;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
@@ -13,11 +16,13 @@ import android.os.Handler;
 import android.os.Vibrator;
 import android.util.Log;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -90,7 +95,9 @@ public class Game extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                     //handler.removeCallbacks(runnable);
+                    handler.removeCallbacks(runnable);
                     mostrarLucesATocar();
+
 
             }
         });
@@ -163,23 +170,45 @@ public class Game extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 updateAdjacentButtons(fila, columna);
-                finalizado();
+                if(finalizado()){
+                    handler.removeCallbacks(runnable);
+                    mostrarDialogFinalizacion(segundos);
+                }
+
             }
         });
 
     }
 
+    public int convertirDpToPx(float dp) {
+        // Obtener el contexto actual
+        Context context = Game.this;
 
- 
+        // Calcular el valor en píxeles
+        float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
+
+        // Convertir el valor de float a int y devolverlo
+        return (int) pixels;
+    }
+
+
     public void gameLayout(){
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
-        screenWidth = size.x-100;
-        screenHeight = size.y;
 
+
+        screenWidth = size.x-100;
+
+        screenHeight = size.y - convertirDpToPx(390);
+
+        if(screenWidth> screenHeight ){
+
+            buttonSize = (screenHeight / 5 ) - 20;
+        }else{
+            buttonSize = (screenWidth / 5 ) - 20;
+        }
         // Definir el tamaño del botón y el margen
-        buttonSize = (screenWidth / 5 ) - 20;
         marginSize = buttonSize / 10;
         LinearLayout root = findViewById(R.id.rootGame);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -350,7 +379,43 @@ public class Game extends AppCompatActivity {
     }
 
 
+    private void mostrarDialogFinalizacion(int tiempo) {
+        // Crear el builder de dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
+        // Configurar el título y el mensaje
+        builder.setTitle("¡Felicitaciones!");
+        builder.setMessage("Has completado el juego en " + tiempo + " segundos");
+
+        // Agregar el botón para regresar a la actividad principal
+        builder.setPositiveButton("Regresar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // Implementar la acción del botón
+                dialog.dismiss();
+
+                finish();
+            }
+        });
+
+        // Agregar el botón para ver la tabla de calificaciones
+        builder.setNegativeButton("Volver a jugar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // Implementar la acción del botón
+                dialog.dismiss();
+                // Iniciar la actividad para ver la tabla de calificaciones
+                Intent intent = new Intent(Game.this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        // Crear y mostrar el dialog
+        AlertDialog dialog = builder.create();
+        Window window = dialog.getWindow();
+        window.setBackgroundDrawableResource(R.color.fifth);
+
+        dialog.show();
+    }
 
 
 
