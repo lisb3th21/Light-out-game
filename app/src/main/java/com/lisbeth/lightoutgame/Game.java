@@ -3,12 +3,9 @@ package com.lisbeth.lightoutgame;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-
-
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -33,6 +30,7 @@ import java.util.List;
 import java.util.Random;
 
 public class Game extends AppCompatActivity {
+    private Resolved resolved;
     int screenWidth;
     int screenHeight;
     int buttonSize;
@@ -43,21 +41,34 @@ public class Game extends AppCompatActivity {
     private Drawable drawableOn;
     private Drawable drawableOff;
     private Drawable drawableTouch;
-    private int segundos = 0;
+    private int seconds = 0;
     private TextView textTime;
     private GameModel model;
     private Handler handler = new Handler();
-    private Button solucionar;
-    private List<Pair<Integer, Integer>> lucesAMostrar;
-
+    private Button solve;
+    private List<Pair<Integer, Integer>> lightsToShow;
 
     private Runnable runnable = new Runnable() {
+        /**
+         * This function will run every second and increment the seconds variable by
+         * one.
+         */
         public void run() {
-            segundos++;
-            textTime.setText(String.valueOf(segundos));
-            handler.postDelayed(this, 1000); // Ejecutar de nuevo el Runnable en un segundo
+            seconds++;
+            textTime.setText(String.valueOf(seconds));
+            handler.postDelayed(this, 1000);
         }
     };
+
+    // Creating a new thread that will run every 2 seconds which checks that the
+    // matrix is solved.
+    private Runnable finisherThread = new Runnable() {
+        public void run() {
+            handler.postDelayed(this, 2000);
+            finished();
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,146 +78,134 @@ public class Game extends AppCompatActivity {
         this.setDrawableOn(getResources().getDrawable(R.drawable.light_on));
         this.setDrawableTouch(getResources().getDrawable(R.drawable.light_touch));
         this.textTime = findViewById(R.id.time);
-        this.solucionar = findViewById(R.id.botonSolucion);
-        //* tomamos los valores de la pantalla inicial para crear la matriz de botones
+        this.solve = findViewById(R.id.botonSolucion);
+
         if (getIntent().hasExtra("width") || getIntent().hasExtra("height")) {
             this.width = getIntent().getIntExtra("width", 5);
             this.height = getIntent().getIntExtra("height", 5);
         } else {
             throw new IllegalArgumentException("Activity cannot find  extras " + "width");
         }
+
+        // Create the buttons of the game
         this.gameLayout();
+
+        // initialize the model of the game
         this.model = new GameModel(height, width);
-        this.inicializarTablero();
-        // agregamos los listeners
+
+        // initialize the buttons of the game
+        this.initializeBoard();
+        // add the listeners of the buttons
         for (int i = 0; i < buttons.length; i++) {
             for (int j = 0; j < buttons[i].length; j++) {
                 this.changeButtonBackground(buttons[i][j]);
             }
         }
 
-        // * inicualizamos el contador de segundos
+        // initialize the timer
         handler.post(runnable);
 
+        // initialize the solve button
+        handler.post(finisherThread);
 
-        solucionar.setOnClickListener(new View.OnClickListener() {
-            //Handler timer = new Handler();
+        setResolved(Resolved.USER);
 
+        // add listener for the solve button
+        solve.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    //handler.removeCallbacks(runnable);
-                    handler.removeCallbacks(runnable);
-                    mostrarLucesATocar();
-
-
+                handler.removeCallbacks(runnable);
+                mostrarLucesATocar();
+                setResolved(Resolved.PROGRAM);
             }
         });
-
-
     }
+
+    public Resolved getResolved() {
+        return resolved;
+    }
+
+    public void setResolved(Resolved resolved) {
+        this.resolved = resolved;
+    }
+
+    /// !!! aqui me quede
 
     private void mostrarLucesATocar() {
-        lucesAMostrar = obtenerLucesAMostrar(); // Obtener la lista de luces a mostrar
+        lightsToShow = getLightsToShow(); // Obtener la lista de luces a mostrar
 
         Handler timer = new Handler();
-        for (int i = 0; i < lucesAMostrar.size(); i++) {
-            Log.d("solsssss", "aquii");
-            final Pair<Integer, Integer> luz = lucesAMostrar.get(i);
+        for (int i = 0; i < lightsToShow.size(); i++) {
+
+            final Pair<Integer, Integer> light = lightsToShow.get(i);
             timer.postDelayed(new Runnable() {
                 public void run() {
-                    mostrarLuz(luz.first, luz.second);
-
+                    showLight(light.first, light.second);
                 }
-            }, i * 1000); // Mostrar la luz con una pausa de 1 segundo
-            //cambiarRojos();
+            }, i * 1000);
         }
-    }
-
-    private void mostrarLuz(int fila, int columna) {
-       // cambiarRojos();
-        buttons[fila][columna].setText("TOUCH");
-        buttons[fila][columna].setTextColor(Color.RED);
-        Button boton = buttons[fila][columna];
-        Log.d("sol", "aquii");
-        updateAdjacentButtons(fila, columna);
-
 
     }
 
+    private void showLight(int row, int column) {
+        buttons[row][column].setText("x");
+        buttons[row][column].setTextColor(getResources().getColor(R.color.fifth));
+        updateAdjacentButtons(row, column);
+    }
 
-    private List<Pair<Integer, Integer>> obtenerLucesAMostrar() {
-        List<Pair<Integer, Integer>> luces = new ArrayList<>();
+    private List<Pair<Integer, Integer>> getLightsToShow() {
+        List<Pair<Integer, Integer>> lights = new ArrayList<>();
 
-        for (int fila = 0; fila < model.getSolution().length; fila++) {
-            for (int columna = 0; columna < model.getSolution()[fila].length; columna++) {
-                if (model.getSolution()[fila][columna]) {
-                    luces.add(new Pair<>(fila, columna));
+        for (int row = 0; row < model.getSolution().length; row++) {
+            for (int column = 0; column < model.getSolution()[row].length; column++) {
+                if (model.getSolution()[row][column]) {
+                    lights.add(new Pair<>(row, column));
                 }
             }
         }
 
-        return luces;
+        return lights;
     }
 
-
-    public void cambiarRojos(){
-        for (int i = 0; i < buttons.length; i++) {
-
-            for (int j = 0; j < buttons[i].length; j++) {
-
-                if (buttons[i][j].getBackground() == drawableTouch){
-                    buttons[i][j].setBackground(drawableOff);
-
-                }
-            }
-        }
-    }
-
+    /**
+     * When the button is clicked, update the adjacent buttons.
+     * 
+     * @param button The button that was clicked
+     */
     public void changeButtonBackground(final Button button) {
-
-        int fila = this.obtenerFilaBoton(button);
-        int columna = this.obtenerColumnaBoton(button);
+        int row = this.obtenerFilaBoton(button);
+        int column = this.obtenerColumnaBoton(button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                updateAdjacentButtons(fila, columna);
-                if(finalizado()){
-                    handler.removeCallbacks(runnable);
-                    mostrarDialogFinalizacion(segundos);
-                }
-
+                updateAdjacentButtons(row, column);
             }
         });
-
     }
 
-    public int convertirDpToPx(float dp) {
-        // Obtener el contexto actual
+    /**
+     * Convert a value in dp to a value in pixels.
+     * 
+     * @param dp The value in dp that you want to convert to pixels.
+     * @return The pixels of the screen.
+     */
+    public int convertDpToPx(float dp) {
         Context context = Game.this;
-
-        // Calcular el valor en píxeles
-        float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
-
-        // Convertir el valor de float a int y devolverlo
+        float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
+                context.getResources().getDisplayMetrics());
         return (int) pixels;
     }
 
-
-    public void gameLayout(){
+    public void gameLayout() {
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
-
-
-        screenWidth = size.x-100;
-
-        screenHeight = size.y - convertirDpToPx(390);
-
-        if(screenWidth> screenHeight ){
-
-            buttonSize = (screenHeight / 5 ) - 20;
-        }else{
-            buttonSize = (screenWidth / 5 ) - 20;
+        screenWidth = size.x - 100;
+        screenHeight = size.y - convertDpToPx(390);
+        if (screenWidth > screenHeight) {
+            buttonSize = (screenHeight / 5) - 20;
+        } else {
+            buttonSize = (screenWidth / 5) - 20;
         }
         // Definir el tamaño del botón y el margen
         marginSize = buttonSize / 10;
@@ -230,7 +229,6 @@ public class Game extends AppCompatActivity {
                         buttonSize);
                 params.setMargins(10, 10, 10, 10);
                 button.setLayoutParams(params);
-
                 buttons[row][col] = button;
                 rowLayout.addView(button);
             }
@@ -240,10 +238,10 @@ public class Game extends AppCompatActivity {
     }
 
     private int obtenerFilaBoton(Button boton) {
-        for (int fila = 0; fila < buttons.length; fila++) {
-            for (int columna = 0; columna < buttons[fila].length; columna++) {
-                if (buttons[fila][columna] == boton) {
-                    return fila;
+        for (int row = 0; row < buttons.length; row++) {
+            for (int column = 0; column < buttons[row].length; column++) {
+                if (buttons[row][column] == boton) {
+                    return row;
                 }
             }
         }
@@ -260,7 +258,6 @@ public class Game extends AppCompatActivity {
         }
         return -1;
     }
-
 
     public Button[][] getButtons() {
         return buttons;
@@ -290,36 +287,30 @@ public class Game extends AppCompatActivity {
         this.drawableOff = drawableOff;
     }
 
-
     private void cambiarColorBoton(Button boton) {
-        if(boton.getBackground() == drawableOff){
+        if (boton.getBackground() == drawableOff) {
             boton.setBackground(drawableOn);
-        }else{
+        } else {
             boton.setBackground(drawableOff);
         }
     }
 
-    public void inicializarTablero(){
+    public void initializeBoard() {
         Random ran = new Random();
         for (int i = 0; i < buttons.length; i++) {
 
             for (int j = 0; j < buttons[i].length; j++) {
                 int probabilidad = ran.nextInt(2);
-                if (probabilidad==1){
+                if (probabilidad == 1) {
                     updateAdjacentButtons(i, j);
 
                 }
             }
         }
 
-
     }
 
-
-
-
-
-    public void updateAdjacentButtons( int row, int col) {
+    public void updateAdjacentButtons(int row, int col) {
         this.model.getSolution()[row][col] = !model.getSolution()[row][col];
 
         int numRows = buttons.length;
@@ -350,15 +341,12 @@ public class Game extends AppCompatActivity {
         }
     }
 
-
-
-
-
-    public  boolean finalizado(){
+    public boolean finished() {
+        handler.removeCallbacks(runnable);
         for (int i = 0; i < buttons.length; i++) {
             for (int j = 0; j < buttons[i].length; j++) {
-                if(buttons[i][j].getBackground()== drawableOn){
-                    return  false;
+                if (buttons[i][j].getBackground() == drawableOn) {
+                    return false;
                 }
             }
         }
@@ -367,8 +355,15 @@ public class Game extends AppCompatActivity {
             long[] patron = { 500, 500 };
             vibrator.vibrate(patron, -1);
         }
+        if (getResolved().equals(Resolved.USER)) {
 
-        return  true;
+            mostrarDialogFinalizacion(seconds);
+        } else {
+            showDialogWhenSolved();
+        }
+
+        handler.removeCallbacks(finisherThread);
+        return true;
     }
 
     @Override
@@ -378,14 +373,16 @@ public class Game extends AppCompatActivity {
         handler.removeCallbacks(runnable); // Detener el contador
     }
 
+    // TODO unir las dos cosas en el mismo método
 
     private void mostrarDialogFinalizacion(int tiempo) {
+
         // Crear el builder de dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         // Configurar el título y el mensaje
         builder.setTitle("¡Felicitaciones!");
-        builder.setMessage("Has completado el juego en " + tiempo + " segundos");
+        builder.setMessage("Has completado el juego en " + tiempo + " seconds");
 
         // Agregar el botón para regresar a la actividad principal
         builder.setPositiveButton("Regresar", new DialogInterface.OnClickListener() {
@@ -417,15 +414,41 @@ public class Game extends AppCompatActivity {
         dialog.show();
     }
 
+    public void showDialogWhenSolved() {
+        // Crear el builder de dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
+        // Configurar el título y el mensaje
+        builder.setTitle("¡Finalizado!");
+        builder.setMessage("Se ha resuelto el juego");
 
+        // Agregar el botón para regresar a la actividad principal
+        builder.setPositiveButton("Regresar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // Implementar la acción del botón
+                dialog.dismiss();
+                finish();
+            }
+        });
 
+        // Agregar el botón para ver la tabla de calificaciones
+        builder.setNegativeButton("Volver a jugar", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // Implementar la acción del botón
+                dialog.dismiss();
+                // Iniciar la actividad para ver la tabla de calificaciones
+                Intent intent = new Intent(Game.this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
 
+        // Crear y mostrar el dialog
+        AlertDialog dialog = builder.create();
+        Window window = dialog.getWindow();
+        window.setBackgroundDrawableResource(R.color.fifth);
 
-
-
-
-
-
+        dialog.show();
+    }
 
 }
