@@ -20,9 +20,7 @@ public class GameModel {
         }
     }
 
-    //public boolean[][] getBoard() {
-       // return board;
-   // }
+
 
     public void setBoard(boolean[][] board) {
         this.board = board;

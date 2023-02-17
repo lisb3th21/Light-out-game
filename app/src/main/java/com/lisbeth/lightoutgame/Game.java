@@ -3,9 +3,13 @@ package com.lisbeth.lightoutgame;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -25,7 +29,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
@@ -45,26 +51,19 @@ public class Game extends AppCompatActivity {
     private TextView textTime;
     private GameModel model;
     private Handler handler = new Handler();
+    private Handler timeHandler = new Handler();
     private Button solve;
     private List<Pair<Integer, Integer>> lightsToShow;
+    private TimerRunnable timerRunnable;
+    private GameDatabaseHelper dbHelper;
+    private SQLiteDatabase db;
 
-    private Runnable runnable = new Runnable() {
-        /**
-         * This function will run every second and increment the seconds variable by
-         * one.
-         */
-        public void run() {
-            seconds++;
-            textTime.setText(String.valueOf(seconds));
-            handler.postDelayed(this, 1000);
-        }
-    };
 
     // Creating a new thread that will run every 2 seconds which checks that the
     // matrix is solved.
     private Runnable finisherThread = new Runnable() {
         public void run() {
-            handler.postDelayed(this, 2000);
+            handler.postDelayed(this, 1500);
             finished();
         }
     };
@@ -79,6 +78,7 @@ public class Game extends AppCompatActivity {
         this.setDrawableTouch(getResources().getDrawable(R.drawable.light_touch));
         this.textTime = findViewById(R.id.time);
         this.solve = findViewById(R.id.botonSolucion);
+        this.timerRunnable = new TimerRunnable(timeHandler, textTime, 0);
 
         if (getIntent().hasExtra("width") || getIntent().hasExtra("height")) {
             this.width = getIntent().getIntExtra("width", 5);
@@ -102,8 +102,9 @@ public class Game extends AppCompatActivity {
             }
         }
 
-        // initialize the timer
-        handler.post(runnable);
+        // !initialize the timer
+        timeHandler.postDelayed(timerRunnable, 1000);
+        // timeHandler.post(runnable);
 
         // initialize the solve button
         handler.post(finisherThread);
@@ -114,7 +115,8 @@ public class Game extends AppCompatActivity {
         solve.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                handler.removeCallbacks(runnable);
+                disableLightButtons();
+                timerRunnable.stop();
                 mostrarLucesATocar();
                 setResolved(Resolved.PROGRAM);
             }
@@ -298,16 +300,13 @@ public class Game extends AppCompatActivity {
     public void initializeBoard() {
         Random ran = new Random();
         for (int i = 0; i < buttons.length; i++) {
-
             for (int j = 0; j < buttons[i].length; j++) {
-                int probabilidad = ran.nextInt(2);
-                if (probabilidad == 1) {
+                int probability = ran.nextInt(2);
+                if (probability == 1) {
                     updateAdjacentButtons(i, j);
-
                 }
             }
         }
-
     }
 
     public void updateAdjacentButtons(int row, int col) {
@@ -315,34 +314,29 @@ public class Game extends AppCompatActivity {
 
         int numRows = buttons.length;
         int numCols = buttons[0].length;
-
+        cambiarColorBoton(buttons[row][col]);
         // Actualiza el botón al oeste
         if (col > 0) {
-            Button westButton = buttons[row][col - 1];
-            cambiarColorBoton(westButton);
+            cambiarColorBoton(buttons[row][col - 1]);
         }
 
         // Actualiza el botón al este
         if (col < numCols - 1) {
-            Button eastButton = buttons[row][col + 1];
-            cambiarColorBoton(eastButton);
+            cambiarColorBoton(buttons[row][col + 1]);
         }
 
         // Actualiza el botón al norte
         if (row > 0) {
-            Button northButton = buttons[row - 1][col];
-            cambiarColorBoton(northButton);
+            cambiarColorBoton(buttons[row - 1][col]);
         }
 
         // Actualiza el botón al sur
         if (row < numRows - 1) {
-            Button southButton = buttons[row + 1][col];
-            cambiarColorBoton(southButton);
+            cambiarColorBoton(buttons[row + 1][col]);
         }
     }
 
     public boolean finished() {
-        handler.removeCallbacks(runnable);
         for (int i = 0; i < buttons.length; i++) {
             for (int j = 0; j < buttons[i].length; j++) {
                 if (buttons[i][j].getBackground() == drawableOn) {
@@ -356,12 +350,13 @@ public class Game extends AppCompatActivity {
             vibrator.vibrate(patron, -1);
         }
         if (getResolved().equals(Resolved.USER)) {
-
+            saveTime();
             mostrarDialogFinalizacion(seconds);
         } else {
             showDialogWhenSolved();
         }
 
+        timerRunnable.stop();
         handler.removeCallbacks(finisherThread);
         return true;
     }
@@ -369,8 +364,8 @@ public class Game extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        handler.removeCallbacks(runnable); // Detener el contador
+        timerRunnable.stop();
+        handler.removeCallbacks(finisherThread);
     }
 
     // TODO unir las dos cosas en el mismo método
@@ -382,7 +377,7 @@ public class Game extends AppCompatActivity {
 
         // Configurar el título y el mensaje
         builder.setTitle("¡Felicitaciones!");
-        builder.setMessage("Has completado el juego en " + tiempo + " seconds");
+        builder.setMessage("Has completado el juego en " + timerRunnable.getSeconds() + " seconds");
 
         // Agregar el botón para regresar a la actividad principal
         builder.setPositiveButton("Regresar", new DialogInterface.OnClickListener() {
@@ -426,7 +421,7 @@ public class Game extends AppCompatActivity {
         builder.setPositiveButton("Regresar", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // Implementar la acción del botón
-                dialog.dismiss();
+               // dialog.dismiss();
                 finish();
             }
         });
@@ -447,8 +442,47 @@ public class Game extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         Window window = dialog.getWindow();
         window.setBackgroundDrawableResource(R.color.fifth);
-
+        prueba();
         dialog.show();
+    }
+
+
+    public void disableLightButtons(){
+        for (int i = 0; i < buttons.length; i++) {
+            for (int j = 0; j < buttons[i].length; j++) {
+                buttons[i][j].setEnabled(false);
+            }
+        }
+    }
+
+    public void saveTime(){
+        Log.d("Sirmaza", "save");
+        this.dbHelper.getWritableDatabase();
+
+        // Inserta un registro en la tabla game_time
+        ContentValues values = new ContentValues();
+        values.put("time", timerRunnable.getSeconds());  // Ejemplo de tiempo del juego
+        Calendar calendar = Calendar.getInstance();
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        String dateTime = dateFormat.format(calendar.getTime());
+        values.put("date", dateTime);  // Ejemplo de fecha del juego
+        db.insert("game_time", null, values);
+        prueba();
+    }
+
+
+    public void prueba(){
+        Log.d("Sirmaza", "ejec");
+        String[] columns = {"id", "time", "date"};
+        Cursor cursor = db.query("game_time", columns, null, null, null, null, null);
+        while (cursor.moveToNext()) {
+            int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+            int time = cursor.getInt(cursor.getColumnIndexOrThrow("time"));
+            String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
+            Log.d("Sirmaza", "id: " + id + ", time: " + time + ", date: " + date);
+        }
+        cursor.close();
     }
 
 }
