@@ -2,9 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/estadisticas"
-        android:title="Estadisticas" />
+        android:title="Statistics" />
     <item
         android:id="@+id/sobre_el_juego"
-        android:title="Sobre nosotros" />
+        android:title="How to play" />
 
 </menu>

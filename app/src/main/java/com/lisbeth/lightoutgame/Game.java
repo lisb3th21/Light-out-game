@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +34,7 @@ import java.util.Random;
 public class Game extends AppCompatActivity {
     private Resolved resolved;
     int screenWidth;
+    private ImageButton toHome;
     int screenHeight;
     int buttonSize;
     int marginSize;
@@ -107,10 +109,19 @@ public class Game extends AppCompatActivity {
         solve.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                solve.setEnabled(false);
                 disableLightButtons();
                 timerRunnable.stop();
                 showLightsToTouch();
                 setResolved(Resolved.PROGRAM);
+            }
+        });
+        this.toHome = findViewById(R.id.to_home);
+        this.toHome.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Game.this, MainActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -275,7 +286,7 @@ public class Game extends AppCompatActivity {
         Point size = new Point();
         display.getSize(size);
         screenWidth = size.x - 100;
-        screenHeight = size.y - convertDpToPx(340);
+        screenHeight = size.y - convertDpToPx(380);
         if (screenWidth > screenHeight) {
             buttonSize = (screenHeight / 5) - 20;
         } else {
@@ -351,8 +362,9 @@ public class Game extends AppCompatActivity {
 
         builder.setPositiveButton("ScoreBoard", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // TODO implementar una vista para que se vean las tablas de clasificacion
+                Intent intentRecords = new Intent(Game.this, RecordsActivity.class);
                 finish();
+                startActivity(intentRecords);
             }
         });
 
@@ -374,8 +386,8 @@ public class Game extends AppCompatActivity {
     }
 
     private void showDialogWhenUserSolved(int tiempo) {
-        dbHelper.saveRecord(new Records(this.getCurrentTime(), Integer.toString(timerRunnable.getSeconds())));
-        dbHelper.showRecords();
+        dbHelper.addScore(this.getCurrentTime(), Integer.toString(timerRunnable.getSeconds()));
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setTitle("Congratulations!!");
@@ -383,8 +395,10 @@ public class Game extends AppCompatActivity {
 
         builder.setPositiveButton("ScoreBoard", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // TODO implementar una vista para que se vean las tablas de clasificacion
+                Intent intentRecords = new Intent(Game.this, RecordsActivity.class);
                 finish();
+                startActivity(intentRecords);
+
             }
         });
 

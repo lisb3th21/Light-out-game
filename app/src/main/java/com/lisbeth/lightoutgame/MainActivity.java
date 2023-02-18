@@ -13,9 +13,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
     ImageButton menuButton;
+    private GameDatabaseHelper dbh;
+    private TextView textBestRecord;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +27,10 @@ public class MainActivity extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         this.menuButton = findViewById(R.id.menu_button);
         this.popupMenu();
+        this.textBestRecord = findViewById(R.id.record);
+        this.dbh = new GameDatabaseHelper(this);
+       this.textBestRecord.setText(dbh.getFastestScore().getSeconds());
+
 
     }
 
@@ -61,10 +68,12 @@ public class MainActivity extends AppCompatActivity {
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
                             case R.id.estadisticas:
-                                // Implementar la acción de la opción 1
+                                Intent intentRecords = new Intent(MainActivity.this, RecordsActivity.class);
+                                startActivity(intentRecords);
                                 return true;
                             case R.id.sobre_el_juego:
-                                // Implementar la acción de la opción 2
+                                    Intent intent = new Intent(MainActivity.this, AboutUs.class);
+                                    startActivity(intent);
                                 return true;
                             default:
                                 return false;

@@ -5,12 +5,12 @@ import android.content.ContentValues;
 import java.util.UUID;
 
 public class Records {
-    private String id;
+    private long id;
     private String date;
     private String seconds;
 
     public Records( String date, String seconds) {
-        this.id = UUID.randomUUID().toString();
+
         this.date = date;
         this.seconds = seconds;
     }
@@ -32,12 +32,11 @@ public class Records {
         this.seconds = seconds;
     }
 
-    public ContentValues toContentValues() {
-        ContentValues values = new ContentValues();
-        values.put(RecordsContract.RecordEntry.ID, id);
-        values.put(RecordsContract.RecordEntry.DATE, date);
-        values.put(RecordsContract.RecordEntry.SECONDS, seconds);
+    public long getId() {
+        return id;
+    }
 
-        return values;
+    public void setId(long id) {
+        this.id = id;
     }
 }

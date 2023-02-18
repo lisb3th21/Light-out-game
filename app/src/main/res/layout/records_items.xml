@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="20sp"
+    android:padding="16dp"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/titleDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15dp"
+        android:textStyle="bold"
+        android:textColor="@color/text"
+        android:layout_gravity="center"
+        android:padding="10dp"
+        android:text="@string/date"
+        android:gravity="center"
+        android:background="@color/fifth"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+    <TextView
+        android:id="@+id/textViewDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        android:textColor="@color/text"
+        android:background="@color/terciary"
+        android:padding="20dp"
+        android:gravity="center"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    <TextView
+        android:id="@+id/titleSeconds"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15dp"
+        android:textStyle="bold"
+        android:textColor="@color/text"
+        android:layout_gravity="center"
+        android:padding="10dp"
+        android:text="@string/seconds"
+        android:gravity="center"
+        android:background="@color/fifth"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+    <TextView
+        android:id="@+id/textViewSeconds"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        android:textColor="@color/text"
+        android:layout_gravity="center"
+        android:padding="25dp"
+        android:gravity="center"
+        android:background="@color/secondary"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+</LinearLayout>
