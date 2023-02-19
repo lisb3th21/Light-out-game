@@ -33,17 +33,17 @@ import java.util.Random;
 
 public class Game extends AppCompatActivity {
     private Resolved resolved;
-    int screenWidth;
+    private int screenWidth;
     private ImageButton toHome;
-    int screenHeight;
-    int buttonSize;
-    int marginSize;
+    private int screenHeight;
+    private int buttonSize;
+    private int marginSize;
     private int height;
     private int width;
     private Button[][] buttons;
     private Drawable drawableOn;
     private Drawable drawableOff;
-    private Drawable drawableTouch;
+
     private TextView textTime;
     private GameModel model;
     private Handler handler = new Handler();
@@ -53,7 +53,7 @@ public class Game extends AppCompatActivity {
     private TimerRunnable timerRunnable;
     private GameDatabaseHelper dbHelper;
 
-    // Creating a new thread that will run every 2 seconds which checks that the
+    // Creating a new thread that will run every 300 millis which checks that the
     // matrix is solved.
     private Runnable finisherThread = new Runnable() {
         public void run() {
@@ -70,10 +70,10 @@ public class Game extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         this.setDrawableOff(getResources().getDrawable(R.drawable.light_off));
         this.setDrawableOn(getResources().getDrawable(R.drawable.light_on));
-        this.setDrawableTouch(getResources().getDrawable(R.drawable.light_touch));
-        this.textTime = findViewById(R.id.time);
+
+        this.setTextTime(findViewById(R.id.time));
         this.solve = findViewById(R.id.botonSolucion);
-        this.timerRunnable = new TimerRunnable(timeHandler, textTime, 0);
+        this.timerRunnable = new TimerRunnable(timeHandler, this.getTextTime(), 0);
 
         if (getIntent().hasExtra("width") || getIntent().hasExtra("height")) {
             this.width = getIntent().getIntExtra("width", 5);
@@ -89,7 +89,6 @@ public class Game extends AppCompatActivity {
         this.model = new GameModel(height, width);
 
         // initialize the buttons of the game
-
 
         this.initializeBoard();
         // add the listeners of the buttons
@@ -125,7 +124,6 @@ public class Game extends AppCompatActivity {
             }
         });
     }
-
 
     @Override
     protected void onDestroy() {
@@ -192,6 +190,16 @@ public class Game extends AppCompatActivity {
         return -1;
     }
 
+    /**
+     * If the button is not already lit, light it up and update the adjacent
+     * buttons.
+     * 
+     * The first line of the function sets the text of the button to an "X" and the
+     * color to a dark blue
+     * 
+     * @param row    the row of the button that was clicked
+     * @param column The column of the button that was clicked.
+     */
     private void showLight(int row, int column) {
         buttons[row][column].setText("X");
         buttons[row][column].setTextColor(getResources().getColor(R.color.fifth));
@@ -209,9 +217,15 @@ public class Game extends AppCompatActivity {
                 }
             }, i * 1000);
         }
-
     }
 
+    /**
+     * If the button's background is the drawableOff, then set the background to
+     * drawableOn, otherwise set
+     * the background to drawableOff
+     * 
+     * @param boton The button that was clicked
+     */
     private void changeColorButton(Button boton) {
         if (boton.getBackground() == drawableOff) {
             boton.setBackground(drawableOn);
@@ -220,6 +234,11 @@ public class Game extends AppCompatActivity {
         }
     }
 
+    /**
+     * If the random number generator returns a 1, then the button at that location
+     * is set to a mine, and
+     * the adjacent buttons are updated to reflect that
+     */
     public void initializeBoard() {
         Random ran = new Random();
         boolean isInit = false;
@@ -232,33 +251,32 @@ public class Game extends AppCompatActivity {
                 }
             }
         }
-        if(!isInit){
+        if (!isInit) {
             initializeBoard();
         }
     }
 
+    /**
+     * It changes the color of the button that was clicked and the buttons adjacent
+     * to it
+     * 
+     * @param row the row of the button that was clicked
+     * @param col the column of the button that was clicked
+     */
     public void updateAdjacentButtons(int row, int col) {
         this.model.getSolution()[row][col] = !model.getSolution()[row][col];
-
         int numRows = buttons.length;
         int numCols = buttons[0].length;
         changeColorButton(buttons[row][col]);
-        // Actualiza el botón al oeste
         if (col > 0) {
             changeColorButton(buttons[row][col - 1]);
         }
-
-        // Actualiza el botón al este
         if (col < numCols - 1) {
             changeColorButton(buttons[row][col + 1]);
         }
-
-        // Actualiza el botón al norte
         if (row > 0) {
             changeColorButton(buttons[row - 1][col]);
         }
-
-        // Actualiza el botón al sur
         if (row < numRows - 1) {
             changeColorButton(buttons[row + 1][col]);
         }
@@ -347,6 +365,7 @@ public class Game extends AppCompatActivity {
         return true;
     }
 
+    // Disabling all the buttons in the array.
     public void disableLightButtons() {
         for (int i = 0; i < buttons.length; i++) {
             for (int j = 0; j < buttons[i].length; j++) {
@@ -368,7 +387,6 @@ public class Game extends AppCompatActivity {
             }
         });
 
-        // return to main activity
         builder.setNegativeButton("Play again", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.dismiss();
@@ -378,7 +396,6 @@ public class Game extends AppCompatActivity {
             }
         });
 
-        // Crear y mostrar el dialog
         AlertDialog dialog = builder.create();
         Window window = dialog.getWindow();
         window.setBackgroundDrawableResource(R.color.fifth);
@@ -402,12 +419,9 @@ public class Game extends AppCompatActivity {
             }
         });
 
-        // Agregar el botón para ver la tabla de calificaciones
         builder.setNegativeButton("Play again", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // Implementar la acción del botón
                 dialog.dismiss();
-                // Iniciar la actividad para ver la tabla de calificaciones
                 Intent intent = new Intent(Game.this, MainActivity.class);
                 startActivity(intent);
                 finish();
@@ -430,58 +444,16 @@ public class Game extends AppCompatActivity {
         this.resolved = resolved;
     }
 
+    /**
+     * It returns a string that represents the current date and time in the format
+     * of "yyyy-MM-dd HH:mm"
+     * 
+     * @return The current time in the format of yyyy-MM-dd HH:mm
+     */
     public String getCurrentTime() {
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         return dateFormat.format(calendar.getTime());
-    }
-
-    public int getScreenWidth() {
-        return screenWidth;
-    }
-
-    public void setScreenWidth(int screenWidth) {
-        this.screenWidth = screenWidth;
-    }
-
-    public int getScreenHeight() {
-        return screenHeight;
-    }
-
-    public void setScreenHeight(int screenHeight) {
-        this.screenHeight = screenHeight;
-    }
-
-    public int getButtonSize() {
-        return buttonSize;
-    }
-
-    public void setButtonSize(int buttonSize) {
-        this.buttonSize = buttonSize;
-    }
-
-    public int getMarginSize() {
-        return marginSize;
-    }
-
-    public void setMarginSize(int marginSize) {
-        this.marginSize = marginSize;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
     }
 
     public Drawable getDrawableOn() {
@@ -504,68 +476,12 @@ public class Game extends AppCompatActivity {
         this.model = model;
     }
 
-    public Handler getHandler() {
-        return handler;
-    }
-
-    public void setHandler(Handler handler) {
-        this.handler = handler;
-    }
-
-    public Handler getTimeHandler() {
-        return timeHandler;
-    }
-
-    public void setTimeHandler(Handler timeHandler) {
-        this.timeHandler = timeHandler;
-    }
-
-    public Button getSolve() {
-        return solve;
-    }
-
-    public void setSolve(Button solve) {
-        this.solve = solve;
-    }
-
-    public void setLightsToShow(List<Pair<Integer, Integer>> lightsToShow) {
-        this.lightsToShow = lightsToShow;
-    }
-
-    public TimerRunnable getTimerRunnable() {
-        return timerRunnable;
-    }
-
-    public void setTimerRunnable(TimerRunnable timerRunnable) {
-        this.timerRunnable = timerRunnable;
-    }
-
-    public GameDatabaseHelper getDbHelper() {
-        return dbHelper;
-    }
-
-    public void setDbHelper(GameDatabaseHelper dbHelper) {
-        this.dbHelper = dbHelper;
-    }
-
-    public Runnable getFinisherThread() {
-        return finisherThread;
-    }
-
     public void setFinisherThread(Runnable finisherThread) {
         this.finisherThread = finisherThread;
     }
 
     public Drawable getDrawableOff() {
         return drawableOff;
-    }
-
-    public Drawable getDrawableTouch() {
-        return drawableTouch;
-    }
-
-    public void setDrawableTouch(Drawable drawableTouch) {
-        this.drawableTouch = drawableTouch;
     }
 
     public void setDrawableOff(Drawable drawableOff) {

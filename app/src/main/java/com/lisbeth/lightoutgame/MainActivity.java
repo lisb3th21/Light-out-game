@@ -29,11 +29,17 @@ public class MainActivity extends AppCompatActivity {
         this.popupMenu();
         this.textBestRecord = findViewById(R.id.record);
         this.dbh = new GameDatabaseHelper(this);
-       this.textBestRecord.setText(dbh.getFastestScore().getSeconds());
-
+        this.textBestRecord.setText(dbh.getFastestScore().getSeconds());
 
     }
 
+    /**
+     * When the user clicks the "Play" button, the width and height of the game
+     * board are retrieved from
+     * the spinners and passed to the Game activity
+     * 
+     * @param view The view that was clicked.
+     */
     public void toMainGame(View view) {
 
         Spinner spinner = (Spinner) findViewById(R.id.spinner_width);
@@ -48,8 +54,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-
-    public  void popupMenu(){
+    /**
+     * It creates a popup menu when the user clicks on the menu button.
+     */
+    public void popupMenu() {
         menuButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -72,8 +80,8 @@ public class MainActivity extends AppCompatActivity {
                                 startActivity(intentRecords);
                                 return true;
                             case R.id.sobre_el_juego:
-                                    Intent intent = new Intent(MainActivity.this, AboutUs.class);
-                                    startActivity(intent);
+                                Intent intent = new Intent(MainActivity.this, AboutUs.class);
+                                startActivity(intent);
                                 return true;
                             default:
                                 return false;
@@ -81,11 +89,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-                // Mostrar el menú desplegable
                 popupMenu.show();
-
-
-
             }
         });
 

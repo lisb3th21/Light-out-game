@@ -4,23 +4,10 @@ public class GameModel {
     private boolean[][] board;
     private boolean[][] solution;
 
-    public GameModel( int height, int width) {
+    public GameModel(int height, int width) {
         this.board = new boolean[height][width];
         this.solution = new boolean[height][width];
-
     }
-
-
-
-    public void randomBoard() {
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[i].length; j++) {
-                board[i][j] = Math.random() < 0.5;
-            }
-        }
-    }
-
-
 
     public void setBoard(boolean[][] board) {
         this.board = board;

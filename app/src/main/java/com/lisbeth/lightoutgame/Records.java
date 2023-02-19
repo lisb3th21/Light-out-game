@@ -1,9 +1,9 @@
 package com.lisbeth.lightoutgame;
 
-import android.content.ContentValues;
 
-import java.util.UUID;
-
+/**
+ * Records is a class that contains the date and seconds of a record
+ */
 public class Records {
     private long id;
     private String date;

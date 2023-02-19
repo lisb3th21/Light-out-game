@@ -20,7 +20,6 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        // Configurar la vista
         ImageView logo = findViewById(R.id.logo);
         AnimationSet animationSet = new AnimationSet(true);
         ScaleAnimation scaleAnimation = new ScaleAnimation(1, 1.5f, 1, 1.5f,
@@ -29,7 +28,6 @@ public class SplashActivity extends AppCompatActivity {
         animationSet.addAnimation(scaleAnimation);
         logo.startAnimation(animationSet);
 
-        // Configurar un temporizador para pasar a la siguiente actividad
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {

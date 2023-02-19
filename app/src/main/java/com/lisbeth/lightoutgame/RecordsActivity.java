@@ -1,9 +1,7 @@
 package com.lisbeth.lightoutgame;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cursoradapter.widget.CursorAdapter;
 
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -39,11 +37,9 @@ public class RecordsActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        // Obtener todos los registros de la base de datos
         GameDatabaseHelper databaseHelper = new GameDatabaseHelper(this);
         List<Records> itemList = databaseHelper.getAllScores();
 
-        // Configurar el adaptador del ListView
         databaseAdapter = new DatabaseAdapter(this, itemList);
         listView.setAdapter(databaseAdapter);
 

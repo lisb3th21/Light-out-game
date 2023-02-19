@@ -9,6 +9,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * It's a helper class that extends SQLiteOpenHelper. It has methods to add, update, and get all
+ * scores. It also has a method to get the fastest score
+ */
 public class GameDatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "lightoutgame.db";
@@ -22,6 +26,7 @@ public class GameDatabaseHelper extends SQLiteOpenHelper {
     public GameDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
+
 
     @Override
     public void onCreate(SQLiteDatabase db) {
